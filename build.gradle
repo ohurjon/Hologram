@@ -1,21 +1,39 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+    id 'dev.s7a.gradle.minecraft.server' version '3.1.0'
 }
 
-group = 'kr.ohurjon.plugin'
+group = 'kr.ohurjon.plugin.hologram'
 version = '1.0-SNAPSHOT'
 
 repositories {
+    maven {
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+
+        // As of Gradle 5.1, you can limit this to only those
+        // dependencies you expect from it
+        content {
+            includeGroup 'org.bukkit'
+            includeGroup 'org.spigotmc'
+        }
+    }
+    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url = 'https://oss.sonatype.org/content/repositories/central' }
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    compileOnly 'org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT' // The Spigot API with no shadowing. Requires the OSS repo.
 }
 
-test {
-    useJUnitPlatform()
-}
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.register("movePlugin", Copy) {
+    dependsOn(build)
+    copy {
+        from "build/libs/Hologram-1.0-SNAPSHOT.jar"
+        into "/Users/ohurjon/MC Server/plugins/"
+    }
 }

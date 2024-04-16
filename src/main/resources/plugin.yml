@@ -1,0 +1,10 @@
+name: Hologram
+version: 1.0
+description: Hologram Plugin made by Yujun Oh
+main : kr.ohurjon.plugin.hologram.HologramPlugin
+author: ohurjon
+website: ohurjon.kro.kr
+
+commands:
+  hologram:
+    description: "hologram command"

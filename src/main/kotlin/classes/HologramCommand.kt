@@ -6,6 +6,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.entity.Entity
 
 class HologramCommand : CommandExecutor, TabCompleter {
     override fun onCommand(commandSender: CommandSender?, command: Command?, label: String?, args: Array<out String>?): Boolean {
@@ -13,6 +14,10 @@ class HologramCommand : CommandExecutor, TabCompleter {
             if(args[0] == "create")
                 if(!hologramManager.existHologram(args[1])) {
                     val hologram = hologramManager.createHologram(args[1])
+                    if(args.size > 2)
+                        hologram.setText(fullArg(2,args.toList()))
+                    if(commandSender is Entity)
+                        hologram.setLocation(commandSender.location)
                     hologram.create()
                     commandSender.sendMessage("홀로그램 ${args[1]}이 생성되었습니다!")
                 } else {
@@ -20,6 +25,8 @@ class HologramCommand : CommandExecutor, TabCompleter {
                     return false
                 }
             if(args[0] == "edit")
+                if(args.size == 1)
+                    commandSender.sendMessage("수정 할 홀로그램을 입력해주세요.")
                 if(!hologramManager.editHologram(args[1], fullArg(2, args.toList()), null)) {
                     commandSender.sendMessage("홀로그램이 존재하지 않습니다.")
                     return false
@@ -65,7 +72,7 @@ class HologramCommand : CommandExecutor, TabCompleter {
         if(commandSender?.isOp == true && command?.name == "hologram"){
             if (args != null) {
                 if(args.isEmpty()) {
-                    return mutableListOf("creat", "edit", "editLine")
+                    return mutableListOf("create", "edit", "editLine", "delete","reload")
                 } else {
                     if(args.size == 1) {
                         return hologramManager.hologramNameList()

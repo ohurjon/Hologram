@@ -50,7 +50,7 @@ class Hologram(private val name : String) {
         reload()
     }
 
-    fun setText(text: String?, lineSpace: Double?) {
+    fun setText(text: String?, lineSpace: Double? = null) {
         this.text = text ?: "홀로그램 ${name}에게 텍스트 값이 존재하지 않습니다."
         this.lineSpace = lineSpace ?: this.lineSpace
         reload()

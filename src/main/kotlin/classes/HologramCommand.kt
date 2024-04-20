@@ -20,13 +20,16 @@ class HologramCommand : CommandExecutor, TabCompleter {
                         hologram.setLocation(commandSender.location)
                     hologram.create()
                     commandSender.sendMessage("홀로그램 ${args[1]}이 생성되었습니다!")
+                    return true
                 } else {
                     commandSender.sendMessage("홀로그램이 이미 존재합니다.")
                     return false
                 }
             if(args[0] == "edit")
-                if(args.size == 1)
+                if(args.size == 1) {
                     commandSender.sendMessage("수정 할 홀로그램을 입력해주세요.")
+                    return false
+                }
                 if(!hologramManager.editHologram(args[1], fullArg(2, args.toList()), null)) {
                     commandSender.sendMessage("홀로그램이 존재하지 않습니다.")
                     return false
@@ -51,6 +54,7 @@ class HologramCommand : CommandExecutor, TabCompleter {
             }
             if(args[0] == "reload") {
                 hologramManager.reload()
+                return true
             }
         }
         return false
@@ -70,14 +74,12 @@ class HologramCommand : CommandExecutor, TabCompleter {
         args: Array<out String>?
     ): MutableList<String> {
         if(commandSender?.isOp == true && command?.name == "hologram"){
-            if (args != null) {
-                if(args.isEmpty()) {
-                    return mutableListOf("create", "edit", "editLine", "delete","reload")
-                } else {
-                    if(args.size == 1) {
-                        return hologramManager.hologramNameList()
-                    }
-                }
+            Bukkit.broadcastMessage(args!!.size.toString())
+            if(args?.size == 1) {
+                return mutableListOf("create", "edit", "editLine", "delete","reload")
+            }
+            if(args?.size!! >= 2) {
+                return hologramManager.hologramNameList()
             }
         }
         return mutableListOf()

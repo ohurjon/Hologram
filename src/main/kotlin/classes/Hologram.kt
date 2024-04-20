@@ -38,6 +38,7 @@ class Hologram(private val name : String) {
             location.y -= lineSpace
         }
     }
+
     fun load(config: HologramConfig) {
         this.lineSpace = config.lineSpace ?: this.lineSpace
         this.location = config.location ?: this.location
@@ -47,19 +48,17 @@ class Hologram(private val name : String) {
 
     fun setLineSpace(lineSpace: Double?) {
         this.lineSpace = lineSpace ?: this.lineSpace
-        reload()
     }
 
     fun setText(text: String?, lineSpace: Double? = null) {
         this.text = text ?: "홀로그램 ${name}에게 텍스트 값이 존재하지 않습니다."
         this.lineSpace = lineSpace ?: this.lineSpace
-        reload()
     }
 
     fun setLocation(location: Location?){
         this.location = location ?: this.location
-        reload()
     }
+
     fun create() {
         text.replace('&',ChatColor.COLOR_CHAR)
         createLineText(text,location,lineSpace)

@@ -37,3 +37,12 @@ tasks.register("movePlugin", Copy) {
         into "/Users/ohurjon/MC Server/plugins/"
     }
 }
+
+
+tasks.register("movePluginWindows", Copy) {
+    dependsOn(build)
+    copy {
+        from "build/libs/Hologram-1.0-SNAPSHOT.jar"
+        into "D:/Server/Test/plugins/"
+    }
+}

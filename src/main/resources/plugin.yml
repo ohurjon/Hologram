@@ -2,8 +2,16 @@ name: Hologram
 version: 1.0
 description: Hologram Plugin made by Yujun Oh
 main : kr.ohurjon.plugin.hologram.HologramPlugin
-author: ohurjon
+authors:
+  - ohurjon
 website: ohurjon.kro.kr
+
+load: POSTWORLD
+
+depend :
+  - kotlin-stdlib
+loadbefore :
+  - kotlin-stdlib
 
 commands:
   hologram:

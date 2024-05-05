@@ -1,45 +1,111 @@
 package kr.ohurjon.plugin.hologram.classes
 
 import com.google.gson.GsonBuilder
+import kr.ohurjon.plugin.hologram.HologramPlugin
 import kr.ohurjon.plugin.hologram.HologramPlugin.Companion.hologramPlugin
 import org.bukkit.Location
+import org.bukkit.Server
+import org.bukkit.command.CommandSender
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Player
 import java.io.File
 import java.io.FileReader
 import java.nio.file.Files
 import java.nio.file.StandardOpenOption
+import java.util.UUID
 
 class HologramManager(file: String) {
     private val gson = GsonBuilder().setPrettyPrinting().create()
     private val configFile = File(hologramPlugin.dataFolder, file)
 
     private val list : HashMap<String, Hologram> = HashMap()
+    private val selector : HashMap<UUID, String> = HashMap()
+
+    private val logger = HologramPlugin.hologramLogger
 
     init {
         loadHologramFile()
     }
 
-    fun existHologram(name: String) : Boolean {
+    private fun existHologram(name: String?) : Boolean {
         return list.contains(name)
     }
-    fun createHologram(name : String) : Hologram{
-        if(!list.keys.contains(name))
-            list[name] = Hologram(name)
-        return list[name]!!
+
+    fun getSelectedHologram(uuid: UUID) : Hologram? {
+        return list[selector[uuid]]
     }
 
-    fun deleteHologram(name: String) : Boolean {
-        list[name]?.remove() ?: return false
-        list.remove(name)
+    fun create(sender: CommandSender, name: String) : Boolean {
+        if(existHologram(name)){
+            sender.sendMessage("$name Hologram Already Exists.")
+            return true
+        }
+
+        val hologram = Hologram(name)
+
+        if(sender is Entity){
+            hologram.location = sender.location
+            select(sender, hologram.name)
+        }
+
+        sender.sendMessage("$name Hologram Created.")
+
         return true
     }
 
-    fun editHologram(name: String, text:String, lineSpace: Double?) : Boolean {
-        list[name]?.setText(text, lineSpace) ?: return false
+    fun select(sender : CommandSender, name: String) : Boolean{
+        val uniqueId = sender.uniqueID()
+
+        if(selector[uniqueId] == name) {
+            sender.sendMessage("Already Selected.")
+            return true
+        }
+
+        selector[uniqueId] = name
+        sender.sendMessage("Select $name Hologram!")
         return true
     }
 
-    fun editHologramLineSpace(name: String, lineSpace: Double) : Boolean {
-        list[name]?.setLineSpace(lineSpace) ?: return false
+    fun delete(sender: CommandSender, name: String? = this.selector[sender.uniqueID()]) : Boolean {
+        if(!existHologram(name)){
+            sender.sendMessage("Not Found Selected Hologram!")
+            return true
+        }
+
+        selector.remove(sender.uniqueID())
+        val hologram = list.remove(name)
+        hologram?.removeAll()
+
+        sender.sendMessage("Successfully Removed $name Hologram!")
+        return true
+    }
+
+    fun editText(sender: CommandSender, text: String, name: String? = this.selector[sender.uniqueID()]) : Boolean {
+        if(!existHologram(name)) {
+            sender.sendMessage("Not Found Hologram!")
+            return true
+        }
+
+        val hologram = list[name]!!
+
+        hologram.changeText(text)
+
+        sender.sendMessage("Successfully Edited Text $name Hologram!")
+
+        return true
+    }
+
+    fun editLine(sender: CommandSender, lineText: String, linerNumber : Int, name: String? = this.selector[sender.uniqueID()]) : Boolean {
+        if(!existHologram(name)){
+            sender.sendMessage("Not Found Selected Hologram!")
+            return true
+        }
+
+        val hologram = list[name]!!
+
+        hologram.changeLine(lineText, linerNumber)
+
+        sender.sendMessage("Successfully Edited Line $lineText Hologram!")
         return true
     }
 
@@ -47,13 +113,9 @@ class HologramManager(file: String) {
         return list.keys.toMutableList()
     }
 
-    fun moveHologram(name: String, location: Location) : Boolean{
-        list[name]?.setLocation(location) ?: return false
-        return true
-    }
     fun load(saveList : Map<String, HologramConfig>){
         for (save in saveList) {
-            val hologram = createHologram(save.key)
+            val hologram = Hologram(save.key)
             val hologramConfig = save.value
             hologram.load(hologramConfig)
         }
@@ -64,9 +126,10 @@ class HologramManager(file: String) {
         removeAll()
         loadHologramFile()
     }
+
     fun removeAll() {
         for(hologram in list){
-            hologram.value.remove()
+            hologram.value.removeAll()
         }
         list.clear()
     }
@@ -76,7 +139,7 @@ class HologramManager(file: String) {
 
         val saveList = gson.fromJson(FileReader(configFile),HashMap<String, HologramConfig>()::class.java)
 
-       load(saveList)
+        load(saveList)
     }
 
     fun saveHologramFile() {
@@ -84,4 +147,19 @@ class HologramManager(file: String) {
         val json = gson.toJson(list.toList())
         Files.write(configFile.toPath(), json.toByteArray(), StandardOpenOption.CREATE, StandardOpenOption.WRITE)
     }
+}
+
+
+fun CommandSender.uniqueID() : UUID{
+    var uniqueId : UUID? = null
+
+    if(this is Server)
+        uniqueId = HologramPlugin.hologramServerUUID
+    if(this is Entity)
+        uniqueId = this.uniqueId
+
+    if(uniqueId == null)
+        error("Not Found Unique ID!")
+
+    return uniqueId
 }
